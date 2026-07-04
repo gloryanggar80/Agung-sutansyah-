@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QUANTUM OS · SISTEM DISTRIBUSI KUANTUM</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<style>
+:root{
+  --q1:#00f0ff;--q2:#7b2cff;--q3:#00ffa3;--q4:#ff2bd6;
+  --bg:#05060f;--bg2:#0a0d1f;--card:#0d1230cc;--line:#1a2255;
+  --text:#dff9ff;--muted:#7a86b8;
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI','Orbitron',system-ui,sans-serif;color:var(--text)}
+html,body{background:var(--bg);min-height:100%;overflow-x:hidden}
+body{
+  background:
+    radial-gradient(1200px 600px at 10% -10%,#1b005555,transparent 60%),
+    radial-gradient(900px 500px at 110% 10%,#00557755,transparent 60%),
+    linear-gradient(180deg,#05060f,#07091a 60%,#05060f);
+}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:
+    linear-gradient(var(--line) 1px,transparent 1px),
+    linear-gradient(90deg,var(--line) 1px,transparent 1px);
+  background-size:48px 48px;opacity:.12;
+  animation:gridShift 18s linear infinite;
+}
+@keyframes gridShift{to{background-position:48px 48px}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes spinRev{to{transform:rotate(-360deg)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes naik{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:none}}
+@keyframes garis{0%{transform:scaleX(0)}100%{transform:scaleX(1)}}
+@keyframes partikel{0%{transform:translateY(100vh);opacity:0}10%{opacity:1}90%{opacity:1}100%{transform:translateY(-100vh);opacity:0}}
+
+/* ============ ANIMASI AWAL GAYA PS4 ============ */
+#bootPS4{
+  position:fixed;inset:0;z-index:9999;background:#000;
+  display:grid;place-items:center;overflow:hidden;
+  animation:hilang 1.2s ease 5.2s forwards;
+}
+@keyframes hilang{to{opacity:0;visibility:hidden;pointer-events:none}}
+#bootPS4 .partikel{
+  position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;
+  animation:partikel linear infinite;filter:blur(.3px);opacity:0
+}
+.boot-globe{
+  position:relative;width:260px;height:260px;animation:fadeIn 1.2s ease;
+}
+.boot-globe svg{position:absolute;inset:0;width:100%;height:100%}
+.boot-globe .luar{animation:spin 14s linear infinite}
+.boot-globe .dalam{animation:spinRev 10s linear infinite}
+.boot-teks{
+  position:absolute;bottom:12%;left:0;right:0;text-align:center;letter-spacing:6px;
+  animation:naik 1.4s ease 2s both;
+}
+.boot-teks .b1{font-size:22px;color:var(--q1)}
+.boot-teks .b2{font-size:10px;color:var(--muted);margin-top:6px;letter-spacing:10px}
+.boot-garis{
+  position:absolute;bottom:8%;left:20%;right:20%;height:1px;
+  background:linear-gradient(90deg,transparent,var(--q1),transparent);
+  transform-origin:center;animation:garis 1.6s ease 3s both;
+}
+
+.q-header{
+  position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);
+  background:#07091acc;border-bottom:1px solid var(--line);
+}
+.q-brand{display:flex;align-items:center;gap:12px;padding:12px 18px}
+.q-logo{
+  width:40px;height:40px;border-radius:10px;display:grid;place-items:center;
+  background:conic-gradient(from 0deg,var(--q1),var(--q4),var(--q2),var(--q3),var(--q1));
+  animation:spin 8s linear infinite;
+}
+.q-logo div{width:28px;height:28px;border-radius:6px;background:#07091a}
+.q-title{font-size:18px;letter-spacing:2px;font-weight:800}
+.q-title small{display:block;font-size:10px;color:var(--muted);letter-spacing:4px}
+
+.q-tabs-outer{position:relative;z-index:2}
+.q-tabs{
+  display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;
+  padding:10px 14px 14px;scrollbar-width:none
+}
+.q-tabs::-webkit-scrollbar{display:none}
+.q-tab{
+  flex:0 0 auto;scroll-snap-align:start;
+  padding:10px 18px;border-radius:999px;font-size:13px;letter-spacing:1px;
+  background:var(--card);border:1px solid var(--line);cursor:pointer;
+  transition:.25s;white-space:nowrap;user-select:none
+}
+.q-tab.active{
+  background:linear-gradient(135deg,#00f0ff22,#7b2cff22);
+  border-color:var(--q1);color:#fff;box-shadow:0 0 18px #00f0ff55,inset 0 0 12px #00f0ff22
+}
+.q-tab-indicator{
+  height:2px;background:linear-gradient(90deg,var(--q1),var(--q2),var(--q4),var(--q3));
+  margin:0 14px;border-radius:2px
+}
+
+.q-pages{
+  display:flex;overflow-x:auto;scroll-snap-type:x mandatory;
+  scroll-behavior:smooth;height:calc(100vh - 110px);
+  scrollbar-width:none
+}
+.q-pages::-webkit-scrollbar{display:none}
+.q-page{
+  flex:0 0 100%;width:100%;scroll-snap-align:start;
+  padding:14px;overflow-y:auto
+}
+
+.grid{display:grid;gap:12px}
+.g2{grid-template-columns:repeat(2,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g4{grid-template-columns:repeat(4,1fr)}
+@media(max-width:900px){.g4{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.g2,.g3,.g4{grid-template-columns:1fr}}
+.q-card{
+  background:var(--card);border:1px solid var(--line);
+  border-radius:14px;padding:14px;backdrop-filter:blur(8px);
+  box-shadow:0 4px 24px #00000066,inset 0 1px 0 #ffffff0a;
+  position:relative;overflow:hidden
+}
+.q-card::before{
+  content:"";position:absolute;inset:-1px;
+  background:linear-gradient(135deg,var(--q1) 0%,transparent 30%,transparent 70%,var(--q2) 100%);
+  opacity:.08;pointer-events:none;border-radius:inherit
+}
+.q-card h3{
+  font-size:12px;letter-spacing:2px;color:var(--q1);
+  padding-bottom:8px;margin-bottom:10px;border-bottom:1px solid var(--line);
+  display:flex;align-items:center;justify-content:space-between
+}
+.kpi{
+  text-align:center;padding:12px 6px;
+  background:linear-gradient(180deg,#00f0ff0d,#7b2cff0d)
+}
+.kpi .v{
+  font-size:22px;font-weight:900;letter-spacing:1px;
+  background:linear-gradient(135deg,var(--q1),var(--q3));
+  -webkit-background-clip:text;background-clip:text;color:transparent
+}
+.kpi .l{font-size:10px;color:var(--muted);letter-spacing:2px;margin-top:4px}
+
+input,select,button{
+  width:100%;padding:9px 10px;border-radius:8px;outline:none;
+  background:#0a0f2a;border:1px solid var(--line);font-size:12px;
+  transition:.2s
+}
+input:focus,select:focus{border-color:var(--q1);box-shadow:0 0 0 3px #00f0ff22}
+input[type=number]{-moz-appearance:textfield}
+input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none}
+.btn{
+  cursor:pointer;font-weight:700;letter-spacing:1px;
+  background:linear-gradient(135deg,var(--q1),var(--q2));
+  border:none;color:#05060f
+}
+.btn:hover{filter:brightness(1.15);box-shadow:0 0 18px #00f0ff66}
+.btn.alt{background:linear-gradient(135deg,#1a2255,#0d1230);color:var(--text);border:1px solid var(--line)}
+.btn.danger{background:linear-gradient(135deg,#ff2b6b,#ff2bd6)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.label{font-size:10px;color:var(--muted);letter-spacing:1.5px;margin-bottom:4px}
+.acc{
+  padding:10px 12px;border-radius:10px;background:#0a0f2a;
+  border:1px solid var(--line);cursor:pointer;margin-bottom:6px;
+  display:flex;justify-content:space-between;align-items:center;font-size:13px
+}
+.acc:hover{border-color:var(--q1)}
+.acc-body{padding:0 8px 8px;max-height:0;overflow:hidden;transition:.3s}
+.acc.open+.acc-body{max-height:2000px}
+.trader-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:6px 8px;border-radius:8px;background:#07091a;margin:3px 0;border:1px solid var(--line);font-size:12px
+}
+.trader-row:hover{border-color:var(--q3)}
+
+/* === PERBAIKAN TABEL AGAR TIDAK MELEBAR & PAS DI LAYAR === */
+.tabel-wrap{width:100%;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:11px;table-layout:fixed}
+th,td{padding:6px 4px;border:1px solid var(--line);text-align:center;word-wrap:break-word}
+th{background:#0a0f2a;color:var(--q1);letter-spacing:1px;font-size:10px}
+
+.chart-wrap{position:relative;height:240px;width:100%}
+.modal{
+  position:fixed;inset:0;background:#000000bb;backdrop-filter:blur(6px);
+  display:none;place-items:center;z-index:100;padding:14px
+}
+.modal.show{display:grid}
+.modal .box{width:100%;max-width:460px}
+.tag{
+  display:inline-block;padding:2px 7px;border-radius:999px;
+  font-size:9px;letter-spacing:1px;border:1px solid var(--line);color:var(--muted)
+}
+.tag.ok{border-color:var(--q3);color:var(--q3)}
+.tag.warn{border-color:#ffcc00;color:#ffcc00}
+.status-lunas{color:var(--q3);font-weight:700}
+.status-blm{color:#ffcc00}
+</style>
+</head>
+<body>
+
+<!-- ============ ANIMASI AWAL PS4 + PETA DUNIA ============ -->
+<div id="bootPS4">
+  <div class="boot-globe">
+    <svg class="luar" viewBox="0 0 200 200">
+      <circle cx="100" cy="100" r="92" fill="none" stroke="#00f0ff44" stroke-width="1"/>
+      <ellipse cx="100" cy="100" rx="92" ry="30" fill="none" stroke="#00f0ff88" stroke-width="1"/>
+      <ellipse cx="100" cy="100" rx="92" ry="55" fill="none" stroke="#00f0ff55" stroke-width="1"/>
+    </svg>
+    <svg class="dalam" viewBox="0 0 200 200">
+      <circle cx="100" cy="100" r="60" fill="#001122" stroke="#00f0ff" stroke-width="1.2"/>
+      <!-- Peta dunia sederhana -->
+      <path d="M70,70 Q85,60 100,68 Q115,62 130,72 Q135,85 125,95 Q115,105 100,102 Q82,108 72,95 Q65,82 70,70Z" fill="#00f0ff55" stroke="#00f0ff" stroke-width=".5"/>
+      <path d="M55,110 Q70,100 85,108 Q95,118 88,132 Q75,140 60,132 Q50,122 55,110Z" fill="#00f0ff44" stroke="#00f0ff" stroke-width=".5"/>
+      <path d="M115,115 Q130,108 142,118 Q145,132 132,138 Q118,135 115,115Z" fill="#00f0ff44" stroke="#00f0ff" stroke-width=".5"/>
+      <ellipse cx="100" cy="100" rx="60" ry="20" fill="none" stroke="#7b2cff88" stroke-width="1"/>
+    </svg>
+  </div>
+  <div class="boot-teks"><div class="b1">QUANTUM OS</div><div class="b2">DISTRIBUTION SYSTEM · v4.1</div></div>
+  <div class="boot-garis"></div>
+</div>
+
+<div class="q-header">
+  <div class="q-brand">
+    <div class="q-logo"><div></div></div>
+    <div class="q-title">QUANTUM OS <small>SISTEM DISTRIBUSI KUANTUM v4.1</small></div>
+  </div>
+  <div class="q-tabs-outer">
+    <div class="q-tabs" id="tabs">
+      <div class="q-tab active" data-i="0">◉ DASHBOARD</div>
+      <div class="q-tab" data-i="1">◈ PEDAGANG & CABANG</div>
+      <div class="q-tab" data-i="2">⬢ GUDANG</div>
+      <div class="q-tab" data-i="3">⟁ DISTRIBUSI</div>
+      <div class="q-tab" data-i="4">⟁ KEUANGAN</div>
+      <div class="q-tab" data-i="5">▤ PEMBUKUAN</div>
+      <div class="q-tab" data-i="6">⚙ PENGATURAN</div>
+    </div>
+    <div class="q-tab-indicator"></div>
+  </div>
+</div>
+
+<div class="q-pages" id="pages">
+
+<!-- ============ 0. DASHBOARD ============ -->
+<section class="q-page">
+  <div class="grid g4">
+    <div class="q-card kpi"><div class="v" id="kAsuransi">0</div><div class="l">TOTAL ASURANSI</div></div>
+    <div class="q-card kpi"><div class="v" id="kPengeluaran">0</div><div class="l">TOTAL PENGELUARAN</div></div>
+    <div class="q-card kpi"><div class="v" id="kTerjual">0</div><div class="l">TERJUAL (BUTIR)</div></div>
+    <div class="q-card kpi"><div class="v" id="kUntung">0</div><div class="l">KEUNTUNGAN ×20</div></div>
+  </div>
+  <div class="grid g2" style="margin-top:12px">
+    <div class="q-card"><h3>LINE · PERGERAKAN HARIAN</h3><div class="chart-wrap"><canvas id="cLine"></canvas></div></div>
+    <div class="q-card"><h3>RADAR · KINERJA CABANG</h3><div class="chart-wrap"><canvas id="cRadar"></canvas></div></div>
+    <div class="q-card"><h3>BAR · TAHU vs SOTONG</h3><div class="chart-wrap"><canvas id="cBar"></canvas></div></div>
+    <div class="q-card"><h3>DONUT · BUMBU TERDISTRIBUSI</h3><div class="chart-wrap"><canvas id="cDonat"></canvas></div></div>
+  </div>
+  <div class="q-card" style="margin-top:12px">
+    <h3>TABEL RINGKASAN CABANG</h3>
+    <div class="tabel-wrap"><table id="tabelCabang"></table></div>
+  </div>
+</section>
+
+<!-- ============ 1. PEDAGANG & CABANG ============ -->
+<section class="q-page">
+  <div class="grid g2">
+    <button class="btn" onclick="bunyiKlik();modalTambahPedagang()">＋ TAMBAH PEDAGANG</button>
+    <button class="btn alt" onclick="bunyiKlik();modalHapusPedagang()">− HAPUS PEDAGANG</button>
+  </div>
+  <div id="daftarCabang" style="margin-top:12px"></div>
+</section>
+
+<!-- ============ 2. GUDANG ============ -->
+<section class="q-page">
+  <div class="q-card">
+    <h3>STOK BARU HARI INI</h3>
+    <div class="row2">
+      <div><div class="label">TAHU</div><input type="number" data-gud="sb_tahu" oninput="simpanGudang();hitungBumbuOtomatis()"></div>
+      <div><div class="label">SOTONG</div><input type="number" data-gud="sb_sotong" oninput="simpanGudang();hitungBumbuOtomatis()"></div>
+    </div>
+  </div>
+  <div class="q-card" style="margin-top:12px">
+    <h3>STOK RIJEK</h3>
+    <div class="row2">
+      <div><div class="label">TAHU</div><input type="number" data-gud="sr_tahu" oninput="simpanGudang()"></div>
+      <div><div class="label">SOTONG</div><input type="number" data-gud="sr_sotong" oninput="simpanGudang()"></div>
+    </div>
+  </div>
+  <div class="q-card kpi" style="margin-top:12px">
+    <div class="label">TOTAL SIAP DISTRIBUSI (BARU + RIJEK)</div>
+    <div class="grid g2" style="margin-top:6px">
+      <div><div class="v" id="totStokTahu">0</div><div class="label">TAHU</div></div>
+      <div><div class="v" id="totStokSotong">0</div><div class="label">SOTONG</div></div>
+    </div>
+  </div>
+  <div class="q-card" style="margin-top:12px">
+    <h3>PERSEDIAAN BUMBU GUDANG</h3>
+    <div class="row2">
+      <div><div class="label">ATOM</div><input type="number" data-gud="b_atom" oninput="simpanGudang();hitungBumbuOtomatis()"></div>
+      <div><div class="label">BALADO</div><input type="number" data-gud="b_balado" oninput="simpanGudang();hitungBumbuOtomatis()"></div>
+    </div>
+  </div>
+  <div class="q-card" style="margin-top:12px">
+    <h3>BUMBU TERDISTRIBUSI (OTOMATIS DARI PEDAGANG)</h3>
+    <div class="row2">
+      <div><div class="label">TOTAL ATOM KELUAR</div><div class="v" id="tdAtom">0</div></div>
+      <div><div class="label">TOTAL BALADO KELUAR</div><div class="v" id="tdBalado">0</div></div>
+    </div>
+    <div class="row2" style="margin-top:8px">
+      <div><div class="label">SISA ATOM GUDANG</div><div class="v" id="sisaAtom">0</div></div>
+      <div><div class="label">SISA BALADO GUDANG</div><div class="v" id="sisaBalado">0</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3. DISTRIBUSI ============ -->
+<section class="q-page"><div id="distribusiCabang"></div></section>
+
+<!-- ============ 4. KEUANGAN ============ -->
+<section class="q-page">
+  <div class="grid g4">
+    <button class="btn" onclick="bunyiKlik();modalAsuransi()">＋ ASURANSI</button>
+    <button class="btn alt" onclick="bunyiKlik();modalPengeluaran()">＋ PENGELUARAN</button>
+    <button class="btn" onclick="bunyiKlik();modalKasbon()">＋ KASBON</button>
+    <button class="btn alt" onclick="bunyiKlik();modalHutang()">＋ HUTANG</button>
+  </div>
+  <div class="q-card" style="margin-top:12px"><h3>ASURANSI</h3><div id="listAsuransi"></div></div>
+  <div class="q-card" style="margin-top:12px"><h3>PENGELUARAN</h3><div id="listPengeluaran"></div></div>
+  <div class="q-card" style="margin-top:12px"><h3>DAFTAR KASBON / HUTANG</h3><div id="listKasbon"></div></div>
+</section>
+
+<!-- ============ 5. PEMBUKUAN PER SIKLUS ============ -->
+<section class="q-page" id="areaPembukuan">
+  <div class="grid g2">
+    <div><div class="label">PILIH SIKLUS PERHITUNGAN</div>
+      <select id="pilihSiklus" onchange="bunyiKlik();renderPembukuan()"></select>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn alt" onclick="bunyiKlik();renderPembukuan(true)">⟳ MUAT</button>
+      <button class="btn" onclick="bunyiKlik();unduhPNG()">⬇ PNG</button>
+    </div>
+  </div>
+  <div class="q-card" style="margin-top:12px">
+    <h3>STOK BARU · Kamis s/d Rabu</h3><div class="tabel-wrap"><table id="pbStokBaru"></table></div>
+  </div>
+  <div class="q-card" style="margin-top:12px">
+    <h3>TOTAL BS · Sabtu s/d Jumat</h3><div class="tabel-wrap"><table id="pbBS"></table></div>
+  </div>
+  <div class="q-card" style="margin-top:12px">
+    <h3>SISA & RUMUS AKHIR</h3>
+    <div class="row2">
+      <div><div class="label">SISA KEMARIN</div><input type="number" id="pbSisaKemarin" oninput="simpanPembukuan()"></div>
+      <div><div class="label">SISA SEKARANG</div><input type="number" id="pbSisaSekarang" oninput="simpanPembukuan()"></div>
+    </div>
+    <div class="row2" style="margin-top:8px">
+      <div><div class="label">TOTAL ASURANSI</div><div class="v" id="pbAsuransi">0</div></div>
+      <div><div class="label">TOTAL PENGELUARAN</div><div class="v" id="pbPengeluaran">0</div></div>
+    </div>
+    <div style="margin-top:10px;padding:10px;border:1px dashed var(--q1);border-radius:8px">
+      <div class="label">((SBt‑BSt)+(SBs‑BSs)+SisaKmr‑SisaSkrg) ×230 + Asuransi − Pengeluaran</div>
+      <div class="v" id="pbHasil">0</div>
+    </div>
+  </div>
+  <div class="q-card" style="margin-top:12px"><h3>DETAIL PENGELUARAN</h3><div class="tabel-wrap"><table id="pbDetailKeluar"></table></div></div>
+  <div class="q-card" style="margin-top:12px"><h3>GRAFIK PEMBUKUAN</h3><div class="chart-wrap"><canvas id="cBuku"></canvas></div></div>
+</section>
+
+<!-- ============ 6. PENGATURAN ============ -->
+<section class="q-page">
+  <div class="q-card">
+    <h3>KECERAHAN</h3>
+    <input type="range" min="40" max="130" value="100" id="rBright" oninput="setBright(this.value)">
+    <div class="label" id="vBright">100%</div>
+  </div>
+  <div class="q-card" style="margin-top:12px">
+    <h3>SUARA</h3>
+    <div class="row2">
+      <button class="btn alt" id="btnSuara" onclick="bunyiKlik();toggleSuara()">SUARA : ON</button>
+      <div><div class="label">VOLUME MAX</div><input type="range" min="0" max="100" value="80" id="rVol" oninput="setVol(this.value)"><div class="label" id="vVol">80%</div></div>
+    </div>
+  </div>
+  <div class="q-card" style="margin-top:12px">
+    <h3>TAMBAH CABANG</h3>
+    <div class="row2"><input id="namaCabangBaru" placeholder="Nama cabang..."><button class="btn" onclick="bunyiKlik();tambahCabang()">SIMPAN</button></div>
+  </div>
+  <div class="q-card" style="margin-top:12px">
+    <h3>🤖 AI ASISTEN</h3>
+    <div id="aiLog" style="min-height:120px;padding:10px;border:1px solid var(--line);border-radius:8px;background:#05060f;font-size:12px"></div>
+    <div class="row2" style="margin-top:10px">
+      <button class="btn" onclick="bunyiKlik();aiMulaiDengar()">🎤 DENGARKAN</button>
+      <button class="btn alt" onclick="bunyiKlik();aiDiam()">⏹ BERHENTI</button>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<div class="modal" id="modal"><div class="q-card box" id="modalBox"></div></div>
+
+<script>
+const CABANG_AWAL = {
+  "KREO":["AGUS","Iwan","FAJAR","AZO"],
+  "PONDOK LABU":["AKIM","Iwan","Bubun","AOS","Yayan","Wanda","Budi","UJANG"],
+  "GANDARIA":["ISA","Yudi","YAYAT","UGUN","UCU","UJANG","Unang"],
+  "PONDOK PINANG":["OGI","Ucup","ADE"],
+  "KBJ/MTY":["AEP","Hasan","Aas","Deddy","YAMAN","DUDE","Fikri","AJI"]
+};
+const HR=["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"];
+const HR_BS=["Sabtu","Minggu","Senin","Selasa","Rabu","Kamis","Jumat"];
+const HR_SB=["Kamis","Jumat","Sabtu","Minggu","Senin","Selasa","Rabu"];
+const AWAL_SIKLUS="Kamis";
+
+let state = {
+  cabang:JSON.parse(JSON.stringify(CABANG_AWAL)),
+  trader:{},
+  gudang:{sb_tahu:0,sb_sotong:0,sr_tahu:0,sr_sotong:0,b_atom:0,b_balado:0,tglShift:new Date().toDateString()},
+  asuransi:[], pengeluaran:[], kasbon:{},
+  pembukuan:{sisaKemarin:0,sisaSekarang:0},
+  // === FITUR BARU: ARSIP DATA PER HARI & PER SIKLUS TIDAK PERNAH HILANG ===
+  arsipHarian:{}, // { "YYYY-MM-DD":{sb_t,sb_s,bs_t,bs_s} }
+  daftarSiklus:[], // [{id,awal,akhir,dataHari:{}}]
+  siklusAktif:null,
+  suaraOn:true, volume:0.8, brightness:100,
+  lastDate:new Date().toDateString(),
+  noSiklus:1
+};
+const LS_KEY="QUANTUM_OS_DATA_v41";
+const n=v=>Number(v)||0;
+const rp=v=>"Rp "+n(v).toLocaleString("id-ID");
+
+function load(){
+  const s=localStorage.getItem(LS_KEY);
+  if(s) state=Object.assign(state,JSON.parse(s));
+  cekSiklusDanHarian();
+  Object.keys(state.cabang).forEach(c=>{
+    state.cabang[c].forEach(nm=>{
+      const k=c+"_"+nm;
+      if(!state.trader[k]) state.trader[k]={okem_t:0,okem_s:0,ose_t:0,ose_s:0,sisa_t:0,sisa_s:0,bs_t:0,bs_s:0,rijek_t:0,rijek_s:0,atom:0,balado:0};
+    });
+  });
+  if(!state.siklusAktif && state.daftarSiklus.length) state.siklusAktif=state.daftarSiklus.at(-1).id;
+  save();
+}
+function save(){localStorage.setItem(LS_KEY,JSON.stringify(state))}
+
+/* ============ SIKLUS OTOMATIS · DATA PER HARI TIDAK HILANG ============ */
+function tglStr(d=new Date()){return d.toISOString().slice(0,10)}
+function namaHari(d=new Date()){return HR[d.getDay()]}
+function cekSiklusDanHarian(){
+  const hariIni=tglStr(),hr=namaHari();
+  // simpan data hari ini ke arsip
+  state.arsipHarian[hariIni]={
+    sb_t:n(state.gudang.sb_tahu),sb_s:n(state.gudang.sb_sotong),
+    bs_t:Object.values(state.trader).reduce((a,o)=>a+n(o.bs_t),0),
+    bs_s:Object.values(state.trader).reduce((a,o)=>a+n(o.bs_s),0)
+  };
+  // buat siklus baru jika belum ada atau hari ini Kamis (awal siklus baru)
+  if(!state.daftarSiklus.length || (hr===AWAL_SIKLUS && state.daftarSiklus.at(-1).akhir!==hariIni)){
+    const akhir=new Date();akhir.setDate(akhir.getDate()+6);
+    state.daftarSiklus.push({
+      id:"SK-"+String(state.noSiklus++).padStart(3,"0"),
+      awal:hariIni,akhir:tglStr(akhir),
+      dataHari:{}
+    });
+  }
+  const sk=state.daftarSiklus.at(-1);
+  sk.dataHari[hariIni]=state.arsipHarian[hariIni];
+  sk.akhir=hariIni;
+  if(!state.siklusAktif) state.siklusAktif=sk.id;
+  // reset jam 00:00
+  if(state.lastDate!==hariIni){
+    state.gudang.sr_tahu=n(state.gudang.sr_tahu)+n(state.gudang.sb_tahu);
+    state.gudang.sr_sotong=n(state.gudang.sr_sotong)+n(state.gudang.sb_sotong);
+    Object.keys(state.trader).forEach(k=>{
+      const t=state.trader[k];
+      t.okem_t=n(t.ose_t);t.okem_s=n(t.ose_s);
+      t.ose_t=0;t.ose_s=0;t.sisa_t=0;t.sisa_s=0;t.bs_t=0;t.bs_s=0;t.rijek_t=0;t.rijek_s=0;t.atom=0;t.balado=0;
+    });
+    state.lastDate=hariIni;
+  }
+  save();
+}
+setInterval(cekSiklusDanHarian,60000);
+
+/* ============ SUARA WELCOME & KLIK ============ */
+let AC=null;
+function suaraTTS(teks){
+  if(!state.suaraOn) return;
+  const u=new SpeechSynthesisUtterance(teks);
+  u.lang="id-ID";u.rate=1;u.pitch=1;u.volume=state.volume;
+  speechSynthesis.speak(u);
+}
+function bunyiKlik(){
+  if(!state.suaraOn) return;
+  try{
+    if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)();
+    const o=AC.createOscillator(),g=AC.createGain();
+    o.connect(g);g.connect(AC.destination);
+    o.type="sine";o.frequency.setValueAtTime(880,AC.currentTime);o.frequency.exponentialRampToValueAtTime(440,AC.currentTime+.08);
+    g.gain.setValueAtTime(state.volume*.35,AC.currentTime);g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+.1);
+    o.start();o.stop(AC.currentTime+.12);
+  }catch(e){}
+}
+window.addEventListener("load",()=>setTimeout(()=>suaraTTS("Welcome to Quantum OS. Hallo Agung Sutansyah, semoga harimu menyenangkan."),5200));
+document.addEventListener("click",e=>{
+  if(e.target.closest(".q-tab")||e.target.tagName==="BUTTON"||e.target.closest(".acc")||e.target.closest(".trader-row")) bunyiKlik();
+});
+
+/* ============ BUMBU OTOMATIS BERKURANG DI GUDANG ============ */
+function hitungBumbuOtomatis(){
+  let tA=0,tB=0;
+  Object.values(state.trader).forEach(o=>{tA+=n(o.atom);tB+=n(o.balado)});
+  state.gudang.td_atom=tA;state.gudang.td_balado=tB;
+  document.getElementById("tdAtom").textContent=tA;
+  document.getElementById("tdBalado").textContent=tB;
+  document.getElementById("sisaAtom").textContent=Math.max(0,n(state.gudang.b_atom)-tA);
+  document.getElementById("sisaBalado").textContent=Math.max(0,n(state.gudang.b_balado)-tB);
+  save();
+}
+
+/* ============ TABS ============ */
+const tabs=document.getElementById("tabs"),pages=document.getElementById("pages");
+tabs.querySelectorAll(".q-tab").forEach(t=>{
+  t.onclick=()=>{
+    const i=+t.dataset.i;
+    tabs.querySelectorAll(".q-tab").forEach(x=>x.classList.remove("active"));
+    t.classList.add("active");
+    pages.scrollTo({left:i*pages.clientWidth,behavior:"smooth"});
+    if(i===0) setTimeout(buatSemuaGrafik,120);
+    if(i===5) setTimeout(renderPembukuan,120);
+  };
+});
+let syncing=false;
+pages.onscroll=()=>{
+  if(syncing) return;syncing=true;
+  requestAnimationFrame(()=>{
+    const i=Math.round(pages.scrollLeft/pages.clientWidth);
+    tabs.querySelectorAll(".q-tab").forEach((t,idx)=>t.classList.toggle("active",idx===i));
+    tabs.children[i]?.scrollIntoView({inline:"center",behavior:"smooth",block:"nearest"});
+    syncing=false;
+  });
+};
+
+/* ============ RUMUS PEDAGANG TETAP 100% SAMA ============ */
+function rumusTrader(o){
+  const A=n(o.ose_t)-n(o.rijek_t),B=n(o.sisa_t)-n(o.bs_t);
+  const turun_t=A-B,terjual_t=n(o.okem_t)-n(o.sisa_t),nominal_t=terjual_t*250;
+  const A2=n(o.ose_s)-n(o.rijek_s),B2=n(o.sisa_s)-n(o.bs_s);
+  const turun_s=A2-B2,terjual_s=n(o.okem_s)-n(o.sisa_s),nominal_s=terjual_s*250;
+  const bumbu=(n(o.atom)+n(o.balado))*12500;
+  return{A,B,turun_t,terjual_t,nominal_t,A2,B2,turun_s,terjual_s,nominal_s,bumbu,total:nominal_t+nominal_s+bumbu};
+}
+
+/* ============ CABANG & PEDAGANG ============ */
+function renderCabang(){
+  const el=document.getElementById("daftarCabang");el.innerHTML="";
+  Object.keys(state.cabang).forEach(c=>{
+    const a=document.createElement("div");a.className="acc";
+    a.innerHTML=`<span>◈ ${c}</span><span class="tag">${state.cabang[c].length} org</span>`;
+    const b=document.createElement("div");b.className="acc-body";
+    const ls=document.createElement("div");
+    state.cabang[c].forEach(nm=>{
+      const r=document.createElement("div");r.className="trader-row";
+      r.innerHTML=`<span>${nm}</span><span class="tag">buka data</span>`;
+      r.onclick=()=>bukaDataPedagang(c,nm);
+      ls.append(r);
+    });
+    b.append(ls);a.onclick=e=>{if(e.target===a)a.classList.toggle("open")};
+    el.append(a,b);
+  });
+}
+function bukaDataPedagang(c,nm){
+  const k=c+"_"+nm,o=state.trader[k],r=rumusTrader(o);
+  bukaModal(`<h3>${nm} · ${c}</h3>
+    <div class="label">TAHU — SOTONG</div>
+    <div class="label">OLDER KEMARIN</div><div class="row2">
+      <input type="number" data-k="${k}" data-f="okem_t" value="${o.okem_t}" oninput="ubahTrader(this)">
+      <input type="number" data-k="${k}" data-f="okem_s" value="${o.okem_s}" oninput="ubahTrader(this)">
+    </div>
+    <div class="label" style="margin-top:6px">OLDER SEKARANG</div><div class="row2">
+      <input type="number" data-k="${k}" data-f="ose_t" value="${o.ose_t}" oninput="ubahTrader(this)">
+      <input type="number" data-k="${k}" data-f="ose_s" value="${o.ose_s}" oninput="ubahTrader(this)">
+    </div>
+    <div class="label" style="margin-top:6px">SISA</div><div class="row2">
+      <input type="number" data-k="${k}" data-f="sisa_t" value="${o.sisa_t}" oninput="ubahTrader(this)">
+      <input type="number" data-k="${k}" data-f="sisa_s" value="${o.sisa_s}" oninput="ubahTrader(this)">
+    </div>
+    <div class="label" style="margin-top:6px">BS</div><div class="row2">
+      <input type="number" data-k="${k}" data-f="bs_t" value="${o.bs_t}" oninput="ubahTrader(this)">
+      <input type="number" data-k="${k}" data-f="bs_s" value="${o.bs_s}" oninput="ubahTrader(this)">
+    </div>
+    <div class="label" style="margin-top:6px">RIJEK</div><div class="row2">
+      <input type="number" data-k="${k}" data-f="rijek_t" value="${o.rijek_t}" oninput="ubahTrader(this)">
+      <input type="number" data-k="${k}" data-f="rijek_s" value="${o.rijek_s}" oninput="ubahTrader(this)">
+    </div>
+    <div class="label" style="margin-top:10px">BUMBU · isi otomatis potong stok gudang</div>
+    <div class="row2">
+      <div><div class="label">ATOM</div><input type="number" data-k="${k}" data-f="atom" value="${o.atom}" oninput="ubahTrader(this)"></div>
+      <div><div class="label">BALADO</div><input type="number" data-k="${k}" data-f="balado" value="${o.balado}" oninput="ubahTrader(this)"></div>
+    </div>
+    <div style="margin-top:10px;padding:10px;border:1px solid var(--q1);border-radius:8px;font-size:11px">
+      Turun T=${r.turun_t} · S=${r.turun_s} · Terjual T×250=${rp(r.nominal_t)} · S×250=${rp(r.nominal_s)} · Bumbu=${rp(r.bumbu)}
+      <div class="v" style="font-size:18px">TOTAL ${rp(r.total)}</div>
+    </div>
+    <button class="btn alt" style="margin-top:10px" onclick="tutupModal()">TUTUP</button>`);
+}
+function ubahTrader(i){
+  state.trader[i.dataset.k][i.dataset.f]=n(i.value);
+  save();cekSiklusDanHarian();hitungBumbuOtomatis();renderAll();
+}
+function modalTambahPedagang(){
+  const opts=Object.keys(state.cabang).map(c=>`<option value="${c}">${c}</option>`).join("");
+  bukaModal(`<h3>TAMBAH PEDAGANG</h3>
+    <div class="label">NAMA</div><input id="nmBaru" maxlength="30">
+    <div class="label" style="margin-top:6px">CABANG</div><select id="cbBaru">${opts}</select>
+    <div class="row2" style="margin-top:10px">
+      <button class="btn alt" onclick="tutupModal()">BATAL</button>
+      <button class="btn" onclick="simpanPedagangBaru()">SIMPAN</button>
+    </div>`);
+}
+function simpanPedagangBaru(){
+  const nm=document.getElementById("nmBaru").value.trim().toUpperCase();
+  const c=document.getElementById("cbBaru").value;
+  if(!nm) return;
+  if(!state.cabang[c].includes(nm)){
+    state.cabang[c].push(nm);
+    state.trader[c+"_"+nm]={okem_t:0,okem_s:0,ose_t:0,ose_s:0,sisa_t:0,sisa_s:0,bs_t:0,bs_s:0,rijek_t:0,rijek_s:0,atom:0,balado:0};
+    save();renderAll();tutupModal();
+  }
+}
+function modalHapusPedagang(){
+  let h=`<h3>HAPUS PEDAGANG</h3><div style="max-height:60vh;overflow:auto">`;
+  Object.keys(state.cabang).forEach(c=>{
+    h+=`<div class="label" style="margin-top:6px">${c}</div>`;
+    state.cabang[c].forEach(nm=>h+=`<div class="trader-row"><span>${nm}</span><button class="btn danger" style="width:auto;padding:4px 10px" onclick="hapusPedagang('${c}','${nm}')">HAPUS</button></div>`);
+  });
+  h+=`</div><button class="btn alt" style="margin-top:10px" onclick="tutupModal()">TUTUP</button>`;
+  bukaModal(h);
+}
+function hapusPedagang(c,nm){
+  state.cabang[c]=state.cabang[c].filter(x=>x!==nm);
+  delete state.trader[c+"_"+nm];
+  save();modalHapusPedagang();renderAll();
+}
+function tambahCabang(){
+  const nm=document.getElementById("namaCabangBaru").value.trim().toUpperCase();
+  if(nm && !state.cabang[nm]){state.cabang[nm]=[];save();renderAll();document.getElementById("namaCabangBaru").value=""}
+}
+
+/* ============ GUDANG ============ */
+function muatGudang(){
+  document.querySelectorAll("[data-gud]").forEach(i=>i.value=n(state.gudang[i.dataset.gud]));
+  document.getElementById("totStokTahu").textContent=n(state.gudang.sb_tahu)+n(state.gudang.sr_tahu);
+  document.getElementById("totStokSotong").textContent=n(state.gudang.sb_sotong)+n(state.gudang.sr_sotong);
+  hitungBumbuOtomatis();
+}
+function simpanGudang(){
+  document.querySelectorAll("[data-gud]").forEach(i=>state.gudang[i.dataset.gud]=n(i.value));
+  save();muatGudang();cekSiklusDanHarian();
+}
+
+/* ============ DISTRIBUSI ============ */
+function renderDistribusi(){
+  const el=document.getElementById("distribusiCabang");el.innerHTML="";
+  Object.keys(state.cabang).forEach(c=>{
+    const tot={ose_t:0,ose_s:0,sisa_t:0,sisa_s:0,bs_t:0,bs_s:0,rijek_t:0,rijek_s:0,atom:0,balado:0};
+    state.cabang[c].forEach(nm=>Object.keys(tot).forEach(k=>tot[k]+=n(state.trader[c+"_"+nm][k])));
+    const a=document.createElement("div");a.className="acc";
+    a.innerHTML=`<span>⟁ ${c}</span><span class="tag ok">${rp(rumusTrader(tot).total)}</span>`;
+    const b=document.createElement("div");b.className="acc-body";
+    b.innerHTML=`<div class="tabel-wrap"><table>
+      <tr><th></th><th>TAHU</th><th>SOTONG</th></tr>
+      <tr><td>OLDER SEKARANG</td><td>${tot.ose_t}</td><td>${tot.ose_s}</td></tr>
+      <tr><td>SISA</td><td>${tot.sisa_t}</td><td>${tot.sisa_s}</td></tr>
+      <tr><td>BS</td><td>${tot.bs_t}</td><td>${tot.bs_s}</td></tr>
+      <tr><td>RIJEK</td><td>${tot.rijek_t}</td><td>${tot.rijek_s}</td></tr>
+      <tr><td>ATOM</td><td colspan="2">${tot.atom}</td></tr>
+      <tr><td>BALADO</td><td colspan="2">${tot.balado}</td></tr>
+    </table></div>`;
+    a.onclick=e=>{if(e.target===a)a.classList.toggle("open")};
+    el.append(a,b);
+  });
+}
+
+/* ============ KEUANGAN ============ */
+function modalAsuransi(){bukaModal(`<h3>ASURANSI</h3><div class="label">NOMINAL</div><input type="number" id="nomAsu"><div class="row2" style="margin-top:10px"><button class="btn alt" onclick="tutupModal()">BATAL</button><button class="btn" onclick="simpanAsuransi()">SIMPAN</button></div>`)}
+function simpanAsuransi(){const v=n(document.getElementById("nomAsu").value);if(v){state.asuransi.push({tgl:tglStr(),nilai:v});save();renderKeuangan();tutupModal()}}
+function modalPengeluaran(){bukaModal(`<h3>PENGELUARAN</h3><div class="label">KETERANGAN</div><input id="ketKel"><div class="label" style="margin-top:6px">NOMINAL</div><input type="number" id="nomKel"><div class="row2" style="margin-top:10px"><button class="btn alt" onclick="tutupModal()">BATAL</button><button class="btn" onclick="simpanPengeluaran()">SIMPAN</button></div>`)}
+function simpanPengeluaran(){const k=document.getElementById("ketKel").value,v=n(document.getElementById("nomKel").value);if(k&&v){state.pengeluaran.push({tgl:tglStr(),ket:k,nilai:v});save();renderKeuangan();tutupModal()}}
+function semuaNama(){const a=[];Object.keys(state.cabang).forEach(c=>state.cabang[c].forEach(nm=>a.push({c,nm})));return a}
+function modalKasbon(){
+  let h=`<h3>KASBON / HUTANG</h3><div style="max-height:60vh;overflow:auto">`;
+  semuaNama().forEach(p=>h+=`<div class="trader-row"><span>${p.nm} <span class="tag">${p.c}</span></span><button class="btn" style="width:auto;padding:4px 10px" onclick="formKasbon('${p.c}','${p.nm}')">ISI</button></div>`);
+  h+=`</div><button class="btn alt" style="margin-top:10px" onclick="tutupModal()">TUTUP</button>`;bukaModal(h);
+}
+function modalHutang(){modalKasbon()}
+function formKasbon(c,nm){bukaModal(`<h3>${nm}</h3><div class="label">JUMLAH</div><input type="number" id="nomKas"><div class="row2" style="margin-top:10px"><button class="btn alt" onclick="modalKasbon()">KEMBALI</button><button class="btn" onclick="simpanKasbon('${c}','${nm}')">SIMPAN</button></div>`)}
+function simpanKasbon(c,nm){const v=n(document.getElementById("nomKas").value);if(!v)return;const k=c+"_"+nm;if(!state.kasbon[k])state.kasbon[k]={nama:nm,cabang:c,total:0,bayar:0};state.kasbon[k].total+=v;save();renderKeuangan();tutupModal()}
+function renderKeuangan(){
+  const ta=state.asuransi.reduce((a,b)=>a+n(b.nilai),0),tp=state.pengeluaran.reduce((a,b)=>a+n(b.nilai),0);
+  document.getElementById("listAsuransi").innerHTML=state.asuransi.length?state.asuransi.map(x=>`<div class="trader-row"><span>${x.tgl}</span><b>${rp(x.nilai)}</b></div>`).join(""):`<div class="label">Belum ada</div>`;
+  document.getElementById("listPengeluaran").innerHTML=state.pengeluaran.length?state.pengeluaran.map(x=>`<div class="trader-row"><span>${x.tgl} · ${x.ket}</span><b>${rp(x.nilai)}</b></div>`).join(""):`<div class="label">Belum ada</div>`;
+  let kh=``;
+  Object.keys(state.kasbon).forEach(k=>{
+    const kb=state.kasbon[k],sisa=n(kb.total)-n(kb.bayar),lunas=sisa<=0;
+    const d=document.createElement("div");d.className="trader-row";
+    d.innerHTML=`<span>${kb.nama} <span class="tag">${kb.cabang}</span></span><span>Total ${rp(kb.total)} · Bayar ${rp(kb.bayar)} · <b class="${lunas?'status-lunas':'status-blm'}">${lunas?'LUNAS':'SISA '+rp(sisa)}</b></span>`;
+    d.onclick=()=>bayarKasbon(k);kh+=d.outerHTML;
+  });
+  document.getElementById("listKasbon").innerHTML=kh||`<div class="label">Belum ada</div>`;
+  document.getElementById("kAsuransi").textContent=rp(ta);
+  document.getElementById("kPengeluaran").textContent=rp(tp);
+}
+function bayarKasbon(k){
+  const kb=state.kasbon[k],sisa=n(kb.total)-n(kb.bayar);
+  bukaModal(`<h3>BAYAR · ${kb.nama}</h3><div class="label">SISA ${rp(sisa)}</div><input type="number" id="byr" max="${sisa}"><div class="row2" style="margin-top:10px"><button class="btn alt" onclick="tutupModal()">BATAL</button><button class="btn" onclick="prosesBayar('${k}')">SIMPAN</button></div>`);
+}
+function prosesBayar(k){
+  state.kasbon[k].bayar=n(state.kasbon[k].bayar)+n(document.getElementById("byr").value);
+  if(n(state.kasbon[k].bayar)>=n(state.kasbon[k].total)) delete state.kasbon[k];
+  save();renderKeuangan();tutupModal();
+}
+
+/* ============ PEMBUKUAN BISA PILIH SIKLUS ============ */
+function simpanPembukuan(){
+  state.pembukuan.sisaKemarin=n(document.getElementById("pbSisaKemarin").value);
+  state.pembukuan.sisaSekarang=n(document.getElementById("pbSisaSekarang").value);
+  save();renderPembukuan();
+}
+function renderPembukuan(){
+  const sel=document.getElementById("pilihSiklus");
+  sel.innerHTML=state.daftarSiklus.map(s=>`<option value="${s.id}" ${s.id===state.siklusAktif?"selected":""}>${s.id} · ${s.awal} s/d ${s.akhir}</option>`).join("");
+  state.siklusAktif=sel.value;
+  const sk=state.daftarSiklus.find(x=>x.id===state.siklusAktif)||state.daftarSiklus.at(-1);
+  const hari=Object.keys(sk.dataHari);
+  let totSB_t=0,totSB_s=0,totBS_t=0,totBS_s=0;
+  let sb=`<tr><th>HARI</th><th>TGL</th><th>TAHU</th><th>SOTONG</th></tr>`;
+  HR_SB.forEach(hr=>{
+    const ada=hari.find(t=>namaHari(new Date(t))===hr);
+    const d=ada?sk.dataHari[ada]:{sb_t:0,sb_s:0};
+    totSB_t+=n(d.sb_t);totSB_s+=n(d.sb_s);
+    sb+=`<tr><td>${hr}</td><td>${ada||"-"}</td><td>${n(d.sb_t)}</td><td>${n(d.sb_s)}</td></tr>`;
+  });
+  sb+=`<tr style="background:#00f0ff22"><th colspan="2">TOTAL</th><th>${totSB_t}</th><th>${totSB_s}</th></tr>`;
+  document.getElementById("pbStokBaru").innerHTML=sb;
+
+  let bs=`<tr><th>HARI</th><th>TGL</th><th>TAHU</th><th>SOTONG</th></tr>`;
+  HR_BS.forEach(hr=>{
+    const ada=hari.find(t=>namaHari(new Date(t))===hr);
+    const d=ada?sk.dataHari[ada]:{bs_t:0,bs_s:0};
+    totBS_t+=n(d.bs_t);totBS_s+=n(d.bs_s);
+    bs+=`<tr><td>${hr}</td><td>${ada||"-"}</td><td>${n(d.bs_t)}</td><td>${n(d.bs_s)}</td></tr>`;
+  });
+  bs+=`<tr style="background:#00f0ff22"><th colspan="2">TOTAL</th><th>${totBS_t}</th><th>${totBS_s}</th></tr>`;
+  document.getElementById("pbBS").innerHTML=bs;
+
+  document.getElementById("pbSisaKemarin").value=state.pembukuan.sisaKemarin||0;
+  document.getElementById("pbSisaSekarang").value=state.pembukuan.sisaSekarang||0;
+  const ta=state.asuransi.reduce((a,b)=>a+n(b.nilai),0);
+  const tp=state.pengeluaran.reduce((a,b)=>a+n(b.nilai),0);
+  document.getElementById("pbAsuransi").textContent=rp(ta);
+  document.getElementById("pbPengeluaran").textContent=rp(tp);
+  const r1=((totSB_t-totBS_t)+(totSB_s-totBS_s))+n(state.pembukuan.sisaKemarin)-n(state.pembukuan.sisaSekarang);
+  const hasil=(r1*230)+ta-tp;
+  document.getElementById("pbHasil").textContent=rp(hasil);
+
+  let dk=`<tr><th>TGL</th><th>KETERANGAN</th><th>NOMINAL</th></tr>`;
+  state.pengeluaran.filter(x=>x.tgl>=sk.awal&&x.tgl<=sk.akhir).forEach(x=>dk+=`<tr><td>${x.tgl}</td><td>${x.ket}</td><td>${rp(x.nilai)}</td></tr>`);
+  dk+=`<tr style="background:#00f0ff22"><th colspan="2">TOTAL</th><th>${rp(tp)}</th></tr>`;
+  document.getElementById("pbDetailKeluar").innerHTML=dk;
+  setTimeout(()=>grafikPembukuan([totSB_t,totBS_t,n(state.pembukuan.sisaKemarin),n(state.pembukuan.sisaSekarang),ta,tp,hasil]),50);
+}
+function unduhPNG(){html2canvas(document.getElementById("areaPembukuan"),{backgroundColor:"#05060f"}).then(c=>{const a=document.createElement("a");a.href=c.toDataURL("image/png");a.download="PEMBUKUAN_"+state.siklusAktif+".png";a.click()})}
+
+/* ============ GRAFIK · DONAT DIPERBAIKI ============ */
+let charts={};
+function buatSemuaGrafik(){
+  const cab=Object.keys(state.cabang);
+  const dataCab=cab.map(c=>{
+    const t={ose_t:0,ose_s:0};
+    state.cabang[c].forEach(nm=>{t.ose_t+=n(state.trader[c+"_"+nm].ose_t);t.ose_s+=n(state.trader[c+"_"+nm].ose_s)});
+    return t;
+  });
+  const tahu=dataCab.map(d=>d.ose_t),sotong=dataCab.map(d=>d.ose_s);
+  mkChart("cLine","line",{labels:HR,datasets:[mkDS("TAHU","#00f0ff",[120,140,95,160,180,130,170]),mkDS("SOTONG","#ff2bd6",[80,110,130,90,150,120,140])]});
+  mkChart("cRadar","radar",{labels:cab,datasets:[mkDS("KINERJA","#7b2cff",cab.map((_,i)=>tahu[i]+sotong[i]))]},{scale:{r:{ticks:{color:"#7a86b8"},grid:{color:"#1a2255"},angleLines:{color:"#1a2255"}}}});
+  mkChart("cBar","bar",{labels:cab,datasets:[mkDS("TAHU","#00f0ff",tahu),mkDS("SOTONG","#ff2bd6",sotong)]});
+  // === DONAT DIPERBAIKI RAPI ===
+  const tA=n(state.gudang.td_atom),tB=n(state.gudang.td_balado);
+  mkChart("cDonat","doughnut",{
+    labels:["ATOM ("+tA+")","BALADO ("+tB+")","SISA GUDANG"],
+    datasets:[{
+      data:[tA,tB,Math.max(0,n(state.gudang.b_atom)+n(state.gudang.b_balado)-tA-tB)],
+      backgroundColor:["#00f0ff","#ff2bd6","#1a2255"],
+      borderColor:"#0a0d1f",borderWidth:2,hoverOffset:8
+    }]
+  },{plugins:{legend:{position:"bottom",labels:{boxWidth:10,padding:10,font:{size:11}}}}});
+
+  let tb=`<tr><th>CABANG</th><th>TAHU</th><th>SOTONG</th><th>TOTAL</th></tr>`;
+  let gT=0;
+  cab.forEach((c,i)=>{
+    const total=(tahu[i]+sotong[i])*250;gT+=(rumusTrader({okem_t:0,okem_s:0,ose_t:tahu[i],ose_s:sotong[i],sisa_t:0,sisa_s:0,bs_t:0,bs_s:0,rijek_t:0,rijek_s:0,atom:0,balado:0}).terjual_t+rumusTrader({okem_t:0,okem_s:0,ose_t:tahu[i],ose_s:sotong[i]}).terjual_s);
+    tb+=`<tr><td>${c}</td><td>${tahu[i]}</td><td>${sotong[i]}</td><td>${rp(total)}</td></tr>`;
+  });
+  document.getElementById("tabelCabang").innerHTML=tb;
+  document.getElementById("kTerjual").textContent=gT;
+  document.getElementById("kUntung").textContent=rp(gT*20);
+}
+function grafikPembukuan(d){mkChart("cBuku","bar",{labels:["StokBaru","BS","SisaKmr","SisaSkrg","Asuransi","Pengeluaran","Hasil"],datasets:[mkDS("NOMINAL","#00ffa3",d)]})}
+function mkDS(l,c,d){return{label:l,data:d,borderColor:c,backgroundColor:c+"33",fill:true,tension:.4,borderWidth:2}}
+function mkChart(id,tipe,data,opt){
+  if(charts[id]) charts[id].destroy();
+  charts[id]=new Chart(document.getElementById(id),{type:tipe,data,options:Object.assign({responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:"#aab4e0",font:{size:10}}}},scales:tipe!=="radar"&&tipe!=="doughnut"?{x:{ticks:{color:"#7a86b8",font:{size:10}},grid:{color:"#1a2255"}},y:{ticks:{color:"#7a86b8",font:{size:10}},grid:{color:"#1a2255"}}}:{}},opt||{})});
+}
+
+/* ============ PENGATURAN ============ */
+function setBright(v){document.body.style.filter=`brightness(${v/100})`;document.getElementById("vBright").textContent=v+"%";state.brightness=+v;save()}
+function setVol(v){document.getElementById("vVol").textContent=v+"%";state.volume=v/100;save()}
+function toggleSuara(){state.suaraOn=!state.suaraOn;document.getElementById("btnSuara").textContent="SUARA : "+(state.suaraOn?"ON":"OFF");save()}
+let SR=window.SpeechRecognition||window.webkitSpeechRecognition,rec=null;
+function aiLog(t){document.getElementById("aiLog").innerHTML+=`<div style="padding:2px 0">${t}</div>`}
+function aiBicara(t){suaraTTS(t);aiLog(`<span style="color:#00f0ff">🤖 ${t}</span>`)}
+function aiMulaiDengar(){
+  if(!SR){aiBicara("Peramban tidak mendukung suara");return}
+  rec=new SR();rec.lang="id-ID";
+  rec.onresult=e=>{
+    const txt=e.results[0][0].transcript.toLowerCase();
+    aiLog(`🎤 ${txt}`);
+    let j="";
+    if(txt.includes("stok")&&txt.includes("gudang"))j=`Stok baru tahu ${state.gudang.sb_tahu}, sotong ${state.gudang.sb_sotong}. Bumbu sisa atom ${Math.max(0,n(state.gudang.b_atom)-n(state.gudang.td_atom))}, balado ${Math.max(0,n(state.gudang.b_balado)-n(state.gudang.td_balado))}`;
+    else if(txt.includes("pedagang")){j=`Total ${Object.values(state.cabang).reduce((a,b)=>a+b.length,0)} pedagang dari ${Object.keys(state.cabang).length} cabang`}
+    else j="Saya bisa cek stok, jumlah pedagang dan distribusi";
+    aiBicara(j);
+  };
+  rec.start();
+}
+function aiDiam(){speechSynthesis.cancel();if(rec)rec.stop()}
+
+function bukaModal(h){document.getElementById("modalBox").innerHTML=h;document.getElementById("modal").classList.add("show")}
+function tutupModal(){document.getElementById("modal").classList.remove("show")}
+document.getElementById("modal").onclick=e=>{if(e.target.id==="modal")tutupModal()};
+
+function renderAll(){renderCabang();renderDistribusi();renderKeuangan();muatGudang();buatSemuaGrafik()}
+
+// partikel animasi PS4
+(function partikelPS4(){
+  const b=document.getElementById("bootPS4");
+  for(let i=0;i<60;i++){
+    const p=document.createElement("div");p.className="partikel";
+    p.style.left=Math.random()*100+"%";p.style.animationDuration=(3+Math.random()*5)+"s";
+    p.style.animationDelay=(-Math.random()*8)+"s";p.style.width=p.style.height=(1+Math.random()*2)+"px";
+    b.append(p);
+  }
+})();
+
+load();renderAll();
+</script>
+</body>
+</html>
